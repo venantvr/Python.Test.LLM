@@ -1,29 +1,46 @@
+from transformers import AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline
+
+# Charger le modèle BioBERT pour l'extraction d'entités
+model_name = "dmis-lab/biobert-base-cased-v1.1"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForTokenClassification.from_pretrained(model_name)
+
+# Créer un pipeline pour la tâche de NER
+ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer)
+
 import json
 
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-# Charger le modèle et le tokenizer
-model_name = "google/flan-t5-large"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+def extract_medical_entities(text: str) -> dict:
+    # Extraire les entités nommées
+    entities = ner_pipeline(text)
 
+    # Initialiser des listes pour chaque catégorie
+    structured_data = {"symptomes": [], "traitements": [], "diagnostics": []}
 
-def generate_json_from_text(text: str) -> dict:
-    prompt = (
-        f"Analyse le texte suivant et retourne un JSON structuré avec les champs "
-        f"'symptômes', 'traitements', 'diagnostics'. Réponds uniquement en JSON : {text}"
-    )
-    inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
-    outputs = model.generate(inputs["input_ids"], max_length=256, num_beams=5, early_stopping=True)
-    json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    try:
-        structured_data = json.loads(json_response)
-    except json.JSONDecodeError:
-        structured_data = {"error": "Format JSON incorrect"}
+    # Classifier les entités extraites en catégories
+    for entity in entities:
+        entity_text = entity['word']
+        entity_label = entity['entity']
+
+        # Classification simplifiée (à adapter selon les besoins)
+        if "SYMPTOM" in entity_label.upper():
+            structured_data["symptomes"].append(entity_text)
+        elif "TREATMENT" in entity_label.upper():
+            structured_data["traitements"].append(entity_text)
+        elif "DIAGNOSIS" in entity_label.upper():
+            structured_data["diagnostics"].append(entity_text)
+
     return structured_data
 
 
-# Exemple de texte
-text = "Le patient présente une toux sèche persistante accompagnée de fièvre modérée. On lui a prescrit du paracétamol pour soulager la douleur."
-json_output = generate_json_from_text(text)
+# Exemple de texte médical
+text = (
+    "Le patient présente une toux sèche persistante accompagnée de fièvre modérée. "
+    "On lui a prescrit du paracétamol pour soulager la douleur. Le diagnostic probable est une infection virale."
+)
+
+# Extraire les entités et les structurer en JSON
+json_output = extract_medical_entities(text)
 print(json.dumps(json_output, indent=4, ensure_ascii=False))
