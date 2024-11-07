@@ -7,20 +7,20 @@ tokenizer = T5Tokenizer.from_pretrained(model_name)
 
 
 def anonymize_with_t5(text):
-    # Fournir une instruction plus précise pour l'anonymisation
-    input_text = f"anonymize: {text} </s>"
+    # Essayons une instruction alternative pour aider le modèle
+    input_text = f"Remove personal information: {text} </s>"
     inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
 
-    # Générer plusieurs séquences pour augmenter les chances d'une reformulation efficace
+    # Générer plusieurs séquences pour essayer des reformulations variées
     outputs = model.generate(
         inputs["input_ids"],
         max_length=512,
-        num_return_sequences=3,  # Essayer plusieurs reformulations
+        num_return_sequences=5,  # Générer davantage de séquences
         do_sample=True,
-        temperature=0.7  # Ajuster la température pour varier les reformulations
+        temperature=0.9  # Ajuster la température pour une plus grande diversité
     )
 
-    # Décoder les résultats et retourner le premier texte reformulé valide
+    # Décoder les résultats et retourner la première reformulation valable
     for output in outputs:
         anonymized_text = tokenizer.decode(output, skip_special_tokens=True)
         if "<extra_id" not in anonymized_text:  # S'assurer que le texte est bien reformulé
