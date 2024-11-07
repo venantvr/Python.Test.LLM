@@ -1,30 +1,28 @@
-import re
+from transformers import AutoModelForTokenClassification, AutoTokenizer, pipeline
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
+# Charger distilBERT pour la reconnaissance d'entités nommées (NER)
+model_name = "distilbert-base-cased"
+model = AutoModelForTokenClassification.from_pretrained("dbmdz/distilbert-base-cased-finetuned-conll03-english")
+tokenizer = AutoTokenizer.from_pretrained("dbmdz/distilbert-base-cased-finetuned-conll03-english")
 
-# Charger le modèle distilGPT-2
-model_name = "distilgpt2"
-model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+# Créer un pipeline pour la reconnaissance d'entités nommées (NER)
+nlp_ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
 
-def anonymize_text(text):
-    # Utiliser des expressions régulières pour anonymiser les noms et dates
-    text = re.sub(r'\b[A-Z][a-z]+\b', 'Personne', text)  # Remplacer les noms propres par 'Personne'
-    text = re.sub(r'\b\d{2,4}-\d{2,4}\b', 'Date', text)  # Remplacer les dates par 'Date'
-    text = re.sub(r'\b\d{5}\b', 'CodePostal', text)  # Remplacer les codes postaux par 'CodePostal'
-
-    # Utiliser le modèle pour reformuler légèrement le texte anonymisé
-    inputs = tokenizer(text, return_tensors="pt")
-    outputs = model.generate(inputs["input_ids"], max_length=256, num_return_sequences=1, do_sample=True)
-    anonymized_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+def anonymize_text_with_distilbert(text):
+    # Utiliser distilBERT pour détecter les entités nommées
+    entities = nlp_ner(text)
+    anonymized_text = text
+    for entity in entities:
+        # Remplacer chaque entité détectée par son type (par exemple, PERSON, LOCATION)
+        anonymized_text = anonymized_text.replace(entity['word'], f"<{entity['entity_group']}>")
 
     return anonymized_text
 
 
 # Exemple de texte à anonymiser
 text = "Jean Dupont habite à Paris depuis 2021. Son numéro de téléphone est 0123456789."
-anonymized_text = anonymize_text(text)
+anonymized_text = anonymize_text_with_distilbert(text)
 
 print("Texte original :", text)
 print("Texte anonymisé :", anonymized_text)
