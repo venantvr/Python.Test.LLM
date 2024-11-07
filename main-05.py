@@ -1,43 +1,34 @@
 import json
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-# Charger GPT-Neo-125M
-model_name = "EleutherAI/gpt-neo-125M"
+# Charger le modèle BloomZ pour générer du JSON en français
+model_name = "bigscience/bloomz-3b"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 
 def generate_simplified_medical_json(text: str) -> dict:
-    # Prompt pour structurer le texte en JSON, avec un exemple pour guider le modèle
+    # Prompt avec un exemple pour guider le modèle
     prompt = (
-        f"Simplifie le texte médical suivant et retourne un JSON structuré avec les catégories 'symptomes', 'traitements', "
-        f"'diagnostics', et 'suivi'. Réponds uniquement en JSON. Voici un exemple de format attendu :\n\n"
+        f"Simplifie et structure le texte médical suivant en JSON avec les catégories 'symptomes', 'traitements', "
+        f"'diagnostics', et 'suivi'. Répond uniquement en JSON. Exemple de format attendu :\n\n"
         f"{{'symptomes': ['exemple symptôme'], 'traitements': ['exemple traitement'], "
         f"'diagnostics': ['exemple diagnostic'], 'suivi': ['exemple suivi']}}\n\n"
         f"Texte : {text}\n\n"
-        f"JSON attendu : <JSON>"
     )
 
     # Tokenizer et génération de la réponse
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
-    outputs = model.generate(inputs["input_ids"], max_new_tokens=256, num_beams=5, early_stopping=True)
+    outputs = model.generate(inputs["input_ids"], max_new_tokens=300, num_beams=5, early_stopping=True)
 
     # Décoder la sortie en texte JSON
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    print("Réponse brute du modèle:", json_response)  # Pour vérifier la réponse
+    print("Réponse brute du modèle:", json_response)
 
-    # Extraire uniquement la partie JSON entre les balises <JSON> et </JSON>
-    json_start = json_response.find("<JSON>")
-    json_end = json_response.find("</JSON>", json_start)
-    if json_start != -1 and json_end != -1:
-        json_content = json_response[json_start + len("<JSON>"):json_end].strip()
-    else:
-        json_content = json_response.strip()
-
+    # Essayer de convertir en JSON
     try:
-        # Convertir la réponse en JSON
-        structured_data = json.loads(json_content)
+        structured_data = json.loads(json_response)
     except json.JSONDecodeError:
         print("Erreur lors de la conversion en JSON. Format non conforme.")
         structured_data = {"error": "Format JSON incorrect"}
