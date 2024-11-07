@@ -11,8 +11,8 @@ model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 def generate_medical_json(text: str) -> dict:
     # Préparer le prompt pour le modèle
     prompt = (
-        f"Analyse le texte suivant et retourne un JSON structuré avec les champs 'symptomes', "
-        f"'traitements', 'diagnostics': {text}"
+        f"Analyse le texte médical suivant et retourne un JSON structuré avec les champs "
+        f"'symptomes', 'traitements', 'diagnostics'. Réponds uniquement en JSON : {text}"
     )
 
     # Tokenizer et génération de la réponse
