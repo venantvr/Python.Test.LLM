@@ -7,8 +7,8 @@ tokenizer = MT5Tokenizer.from_pretrained(model_name)
 
 
 def anonymize_with_rewriting(text):
-    # Provide a more explicit instruction for anonymized rewriting
-    input_text = f"Rewrite the sentence to anonymize sensitive information: {text} </s>"
+    # Remove the </s> and try a clearer instruction
+    input_text = f"Anonymize the following sentence by rewriting it to remove personal information: {text}"
     inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
 
     # Generate multiple variants to increase the chances of a satisfactory reformulation
@@ -17,7 +17,7 @@ def anonymize_with_rewriting(text):
         max_length=512,
         num_return_sequences=3,  # Generate multiple reformulations
         do_sample=True,
-        temperature=0.7  # Adjust temperature for diversity in reformulations
+        temperature=0.9  # Adjust temperature for diversity in reformulations
     )
 
     # Decode and return the first valid reformulation
