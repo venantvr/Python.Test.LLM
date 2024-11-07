@@ -1,66 +1,38 @@
 import json
-import re
 
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-# Charger MiniLM pour l'extraction de caractéristiques
-model_name = "microsoft/MiniLM-L12-H384-uncased"
+# Charger flan-t5 en local
+model_name = "google/flan-t5-small"  # Utilisez une version plus grande (base/large) si votre machine le permet
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name)
-
-# Mots-clés pour classer les informations
-symptoms_keywords = ["toux", "fièvre", "frissons", "douleur thoracique", "essoufflement", "fatigue"]
-treatment_keywords = ["antibiotiques", "ceftriaxone", "azithromycine", "hydratation", "oxygène"]
-diagnosis_keywords = ["pneumonie", "opacité", "inflammation", "CRP", "globules blancs"]
-followup_keywords = ["suivi", "intensifs", "complications"]
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 
-def classify_text(text):
-    """
-    Classifie un texte en symptômes, traitements, diagnostics, ou suivi selon les mots-clés.
-    """
-    if any(keyword in text.lower() for keyword in symptoms_keywords):
-        return "symptome"
-    elif any(keyword in text.lower() for keyword in treatment_keywords):
-        return "traitement"
-    elif any(keyword in text.lower() for keyword in diagnosis_keywords):
-        return "diagnostic"
-    elif any(keyword in text.lower() for keyword in followup_keywords):
-        return "suivi"
-    return None
+def generate_simplified_medical_json(text: str) -> dict:
+    # Prompt pour obtenir un résumé structuré
+    prompt = (
+        f"Simplifie et retourne uniquement un JSON structuré pour ce texte médical. Utilise les catégories suivantes : "
+        f"'symptomes', 'traitements', 'diagnostics', et 'suivi'. Répond uniquement en JSON.\n\nTexte : {text}"
+    )
 
+    # Encoder le prompt et générer la réponse
+    inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
+    outputs = model.generate(inputs["input_ids"], max_length=256, num_beams=5, early_stopping=True)
 
-def extract_information(text):
-    """
-    Divise le texte en phrases, analyse chaque phrase avec MiniLM pour créer un JSON structuré.
-    """
-    sentences = re.split(r'(?<=\.)\s+', text)  # Divise le texte en phrases
-    structured_data = {
-        "symptomes": [],
-        "traitements": [],
-        "diagnostics": [],
-        "suivi": []
-    }
+    # Décoder la sortie en texte JSON
+    json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-    for sentence in sentences:
-        category = classify_text(sentence)
-
-        if category:
-            # Ajouter la phrase à la catégorie correspondante dans le JSON
-            entry = {"text": sentence}
-            if category == "symptome":
-                structured_data["symptomes"].append(entry)
-            elif category == "traitement":
-                structured_data["traitements"].append(entry)
-            elif category == "diagnostic":
-                structured_data["diagnostics"].append(entry)
-            elif category == "suivi":
-                structured_data["suivi"].append(entry)
+    try:
+        # Convertir en JSON
+        structured_data = json.loads(json_response)
+    except json.JSONDecodeError:
+        print("Erreur lors de la conversion en JSON. Format non conforme.")
+        structured_data = {"error": "Format JSON incorrect"}
 
     return structured_data
 
 
-# Texte médical complexe à analyser
+# Texte médical plus complexe pour tester le modèle
 text = (
     "Le patient de 65 ans se présente avec une toux productive, de la fièvre élevée (39,5 °C), des frissons et une "
     "douleur thoracique augmentée à l'inspiration. Il a également signalé un essoufflement et une fatigue importante. "
@@ -77,6 +49,6 @@ text = (
     "envisagé."
 )
 
-# Extraire les informations en JSON structuré
-json_output = extract_information(text)
+# Générer le JSON structuré et simplifié
+json_output = generate_simplified_medical_json(text)
 print(json.dumps(json_output, indent=4, ensure_ascii=False))
