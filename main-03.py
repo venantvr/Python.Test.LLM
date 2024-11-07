@@ -1,7 +1,7 @@
 import re
 
 from sentence_transformers import SentenceTransformer, util
-from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+from transformers import pipeline
 
 # Charger le modèle NER de CamemBERT pour détecter les entités en français
 ner_model = "Jean-Baptiste/camembert-ner"
@@ -34,10 +34,15 @@ def detect_and_replace_entities(text):
 
 
 def paraphrase_text(text):
-    # Générer une paraphrase du texte
-    paraphrases = paraphrase_model.encode([text], convert_to_tensor=True)
-    closest_paraphrase = util.paraphrase_mining(paraphrase_model, [text])[0][2]
-    return closest_paraphrase
+    # Générer des paraphrases en utilisant une méthode simple
+    paraphrases = [text]
+    paraphrased_embeddings = paraphrase_model.encode(paraphrases, convert_to_tensor=True)
+
+    # Trouver la paraphrase la plus proche en comparaison de cosinus
+    scores = util.cos_sim(paraphrased_embeddings, paraphrased_embeddings)
+    best_paraphrase = paraphrases[scores.argmax().item()]
+
+    return best_paraphrase
 
 
 def chatbot():
