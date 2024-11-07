@@ -1,32 +1,35 @@
-from transformers import pipeline
+from transformers import AutoModelForTokenClassification, AutoTokenizer, pipeline
 
-# Utiliser le modèle Camembert standard pour le NER
-nlp_ner = pipeline("ner", model="camembert-base", tokenizer="camembert-base", aggregation_strategy="simple")
+# Charger le modèle BERT pour la reconnaissance d'entités nommées en français
+model_name = "dbmdz/bert-base-french-europeana-cased"
+model = AutoModelForTokenClassification.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# Mapping de labels pour des noms plus explicites (selon les besoins du modèle)
-label_mapping = {
-    "LABEL_0": "PERSONNE",
-    "LABEL_1": "LIEU",
-    "LABEL_2": "ORGANISATION",
-    "LABEL_3": "DATE",
-}
+# Créer un pipeline pour la reconnaissance d'entités nommées (NER)
+nlp_ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
 
-def anonymize_text_with_camembert(text):
-    # Utiliser Camembert pour détecter les entités nommées
+def anonymize_text_with_bert(text):
+    # Utiliser BERT pour détecter les entités nommées
     entities = nlp_ner(text)
     anonymized_text = text
     for entity in entities:
-        # Utiliser le mapping des labels pour remplacer chaque entité détectée
-        label = label_mapping.get(entity['entity'], "ENTITE")
-        anonymized_text = anonymized_text.replace(entity['word'], f"<{label}>")
+        # Utiliser des noms significatifs pour chaque entité détectée
+        if entity['entity_group'] == "PER":
+            anonymized_text = anonymized_text.replace(entity['word'], "<PERSONNE>")
+        elif entity['entity_group'] == "LOC":
+            anonymized_text = anonymized_text.replace(entity['word'], "<LIEU>")
+        elif entity['entity_group'] == "ORG":
+            anonymized_text = anonymized_text.replace(entity['word'], "<ORGANISATION>")
+        elif entity['entity_group'] == "MISC":
+            anonymized_text = anonymized_text.replace(entity['word'], "<DIVERS>")
 
     return anonymized_text
 
 
 # Exemple de texte à anonymiser
 text = "Jean Dupont habite à Paris depuis 2021. Son numéro de téléphone est 0123456789."
-anonymized_text = anonymize_text_with_camembert(text)
+anonymized_text = anonymize_text_with_bert(text)
 
 print("Texte original :", text)
 print("Texte anonymisé :", anonymized_text)
