@@ -1,12 +1,7 @@
-from transformers import AutoModelForTokenClassification, AutoTokenizer, pipeline
+from transformers import pipeline
 
-# Charger le modèle Camembert pour la reconnaissance d'entités nommées (NER)
-model_name = "Jean-Baptiste/camembert-ner"
-model = AutoModelForTokenClassification.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)  # Forcer l'utilisation du tokenizer slow
-
-# Créer un pipeline pour la reconnaissance d'entités nommées (NER)
-nlp_ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+# Utiliser le modèle Camembert standard pour le NER
+nlp_ner = pipeline("ner", model="camembert-base", tokenizer="camembert-base", aggregation_strategy="simple")
 
 
 def anonymize_text_with_camembert(text):
