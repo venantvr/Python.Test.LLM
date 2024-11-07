@@ -22,6 +22,8 @@ def generate_simplified_medical_json(text: str) -> dict:
     # Décoder la sortie en texte JSON
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
+    print(json_response)
+
     try:
         # Convertir en JSON
         structured_data = json.loads(json_response)
