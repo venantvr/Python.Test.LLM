@@ -9,10 +9,14 @@ model = AutoModelForCausalLM.from_pretrained(model_name)
 
 
 def generate_simplified_medical_json(text: str) -> dict:
-    # Prompt pour structurer le texte en JSON
+    # Prompt pour structurer le texte en JSON, avec un exemple pour guider le modèle
     prompt = (
-        f"Simplifie le texte suivant et structure-le en format JSON avec les catégories 'symptomes', 'traitements', 'diagnostics', et 'suivi'. "
-        f"Répond uniquement en JSON.\n\nTexte : {text}"
+        f"Simplifie le texte médical suivant et retourne un JSON structuré avec les catégories 'symptomes', 'traitements', "
+        f"'diagnostics', et 'suivi'. Réponds uniquement en JSON. Voici un exemple de format attendu :\n\n"
+        f"{{'symptomes': ['exemple symptôme'], 'traitements': ['exemple traitement'], "
+        f"'diagnostics': ['exemple diagnostic'], 'suivi': ['exemple suivi']}}\n\n"
+        f"Texte : {text}\n\n"
+        f"JSON attendu : <JSON>"
     )
 
     # Tokenizer et génération de la réponse
@@ -21,10 +25,19 @@ def generate_simplified_medical_json(text: str) -> dict:
 
     # Décoder la sortie en texte JSON
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    print("Réponse brute du modèle:", json_response)  # Pour vérifier la réponse
+
+    # Extraire uniquement la partie JSON entre les balises <JSON> et </JSON>
+    json_start = json_response.find("<JSON>")
+    json_end = json_response.find("</JSON>", json_start)
+    if json_start != -1 and json_end != -1:
+        json_content = json_response[json_start + len("<JSON>"):json_end].strip()
+    else:
+        json_content = json_response.strip()
 
     try:
-        # Convertir en JSON
-        structured_data = json.loads(json_response)
+        # Convertir la réponse en JSON
+        structured_data = json.loads(json_content)
     except json.JSONDecodeError:
         print("Erreur lors de la conversion en JSON. Format non conforme.")
         structured_data = {"error": "Format JSON incorrect"}
