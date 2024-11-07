@@ -2,15 +2,15 @@ import re
 
 from flair.data import Sentence
 from flair.models import SequenceTagger
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import MT5ForConditionalGeneration, MT5Tokenizer
 
-# Charger le modèle de NER de Flair
+# Charger le modèle de NER de Flair pour la détection des entités
 tagger = SequenceTagger.load("flair/ner-french")
 
-# Charger le modèle GPT-2 pour la reformulation
-model_name = "dbddv01/gpt2-french-small"  # GPT-2 en français
-model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+# Charger le modèle mT5 pour la reformulation en français
+model_name = "google/mt5-small"  # Utiliser un modèle multilingue pour la paraphrase
+model = MT5ForConditionalGeneration.from_pretrained(model_name)
+tokenizer = MT5Tokenizer.from_pretrained(model_name)
 
 
 def detect_and_replace_entities(text):
@@ -28,7 +28,7 @@ def detect_and_replace_entities(text):
         elif entity.tag == "MISC" or entity.tag == "DATE":
             anonymized_text = anonymized_text.replace(entity.text, "Date")
 
-    # Masquer les numéros de téléphone avec des expressions régulières
+    # Utiliser des expressions régulières pour anonymiser les numéros de téléphone
     anonymized_text = re.sub(r'\b\d{10}\b', 'NuméroDeTéléphone', anonymized_text)
     anonymized_text = re.sub(r'\b\d{2} \d{2} \d{2} \d{2} \d{2}\b', 'NuméroDeTéléphone', anonymized_text)
     anonymized_text = re.sub(r'\+33\s?\d{9}', 'NuméroDeTéléphone', anonymized_text)
@@ -36,13 +36,14 @@ def detect_and_replace_entities(text):
     return anonymized_text
 
 
-def rewrite_with_gpt2(text):
-    # Instruction concise pour guider le modèle à reformuler uniquement
+def rewrite_with_mt5(text):
+    # Préparer le texte pour la reformulation avec une instruction précise
     input_text = f"Anonymiser et reformuler : {text}"
-    inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
+    inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
 
-    # Générer un texte avec une longueur limitée pour éviter l'excès d'informations
-    outputs = model.generate(inputs, max_length=50, num_return_sequences=1, do_sample=True)
+    # Générer une reformulation concise et pertinente
+    outputs = model.generate(inputs["input_ids"], max_length=50, num_return_sequences=1, do_sample=True,
+                             temperature=0.7)
 
     # Décoder le texte généré
     rewritten_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -59,7 +60,7 @@ def chatbot():
 
         # Anonymiser et reformuler le texte
         anonymized_text = detect_and_replace_entities(user_input)
-        rewritten_text = rewrite_with_gpt2(anonymized_text)
+        rewritten_text = rewrite_with_mt5(anonymized_text)
 
         print("Agent (texte anonymisé) :", rewritten_text)
 
