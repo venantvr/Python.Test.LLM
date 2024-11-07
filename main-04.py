@@ -4,8 +4,8 @@ from sentence_transformers import SentenceTransformer, util
 model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
 # Définir deux phrases pour comparer
-phrase1 = "Bonjour, comment allez-vous ?"
-phrase2 = "Salut, comment ça va ?"
+phrase1 = "Jean a le rhume."
+phrase2 = "Marc a le nez qui coule."
 
 # Générer les embeddings pour chaque phrase
 embedding1 = model.encode(phrase1, convert_to_tensor=True)
