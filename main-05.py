@@ -2,13 +2,13 @@ import json
 
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 
-# Charger le modèle NER français (CamemBERT NER)
-model_name = "Jean-Baptiste/camembert-ner-with-lower-case"
+# Charger le modèle et le tokenizer pour l'analyse biomédicale en français
+model_name = "almanach/camembert-bio-base"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 
-# Créer le pipeline de NER
-ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer)
+# Créer un pipeline pour la tâche de NER
+ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
 
 
 def extract_medical_entities(text: str) -> dict:
@@ -18,17 +18,17 @@ def extract_medical_entities(text: str) -> dict:
     # Initialiser des listes pour chaque catégorie
     structured_data = {"symptomes": [], "traitements": [], "diagnostics": []}
 
-    # Classifier les entités extraites
+    # Classifier les entités extraites en catégories (exemple simplifié)
     for entity in entities:
         entity_text = entity['word']
         entity_label = entity['entity']
 
-        # Classifications basées sur des mots-clés dans les labels (simplifié)
-        if "MALADIE" in entity_label.upper() or "SYMPTOM" in entity_label.upper():
+        # Classification simplifiée pour structurer en catégories
+        if "SYMPTOM" in entity_label.upper() or "ANATOMY" in entity_label.upper():
             structured_data["symptomes"].append(entity_text)
-        elif "MEDICAMENT" in entity_label.upper() or "DRUG" in entity_label.upper():
+        elif "TREATMENT" in entity_label.upper() or "DRUG" in entity_label.upper():
             structured_data["traitements"].append(entity_text)
-        elif "DIAGNOSTIC" in entity_label.upper():
+        elif "DIAGNOSIS" in entity_label.upper() or "DISEASE" in entity_label.upper():
             structured_data["diagnostics"].append(entity_text)
 
     return structured_data
