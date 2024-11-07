@@ -1,38 +1,34 @@
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+from flair.data import Sentence
+from flair.models import SequenceTagger
 
-# Charger le modèle mT5-small
-model_name = "google/mt5-small"
-model = T5ForConditionalGeneration.from_pretrained(model_name)
-tokenizer = T5Tokenizer.from_pretrained(model_name)
-
-
-def anonymize_with_t5(text):
-    # Essayons une instruction alternative pour aider le modèle
-    input_text = f"Remove personal information: {text} </s>"
-    inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
-
-    # Générer plusieurs séquences pour essayer des reformulations variées
-    outputs = model.generate(
-        inputs["input_ids"],
-        max_length=512,
-        num_return_sequences=5,  # Générer davantage de séquences
-        do_sample=True,
-        temperature=0.9  # Ajuster la température pour une plus grande diversité
-    )
-
-    # Décoder les résultats et retourner la première reformulation valable
-    for output in outputs:
-        anonymized_text = tokenizer.decode(output, skip_special_tokens=True)
-        if "<extra_id" not in anonymized_text:  # S'assurer que le texte est bien reformulé
-            return anonymized_text
-
-    # Si aucune reformulation n'est bonne, retourner un message par défaut
-    return "Anonymisation non réussie"
+# Charger le modèle de NER de Flair
+tagger = SequenceTagger.load("flair/ner-french")
 
 
-# Exemple de texte
+def anonymize_with_flair(text):
+    # Créer un objet Sentence pour le texte d'entrée
+    sentence = Sentence(text)
+
+    # Analyser les entités nommées avec Flair
+    tagger.predict(sentence)
+
+    anonymized_text = text
+    for entity in sentence.get_spans('ner'):
+        if entity.tag == "PER":
+            anonymized_text = anonymized_text.replace(entity.text, "<PERSONNE>")
+        elif entity.tag == "LOC":
+            anonymized_text = anonymized_text.replace(entity.text, "<LIEU>")
+        elif entity.tag == "ORG":
+            anonymized_text = anonymized_text.replace(entity.text, "<ORGANISATION>")
+        elif entity.tag == "MISC":
+            anonymized_text = anonymized_text.replace(entity.text, "<DIVERS>")
+
+    return anonymized_text
+
+
+# Exemple de texte à anonymiser
 text = "Jean Dupont habite à Paris depuis 2021. Son numéro de téléphone est 0123456789."
-anonymized_text = anonymize_with_t5(text)
+anonymized_text = anonymize_with_flair(text)
 
 print("Texte original :", text)
 print("Texte anonymisé :", anonymized_text)
