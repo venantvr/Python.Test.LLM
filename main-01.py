@@ -2,15 +2,14 @@ import re
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# Charger le modèle et le tokenizer GPT-J
-model_name = "EleutherAI/gpt-j-6B"
+# Charger le modèle distilGPT-2
+model_name = "distilgpt2"
 model = AutoModelForCausalLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 
 def anonymize_text(text):
-    # Identifier les entités (par ex., noms propres) avec des expressions régulières simples
-    # Remplace les prénoms et noms de famille par un terme générique
+    # Utiliser des expressions régulières pour anonymiser les noms et dates
     text = re.sub(r'\b[A-Z][a-z]+\b', 'Personne', text)  # Remplacer les noms propres par 'Personne'
     text = re.sub(r'\b\d{2,4}-\d{2,4}\b', 'Date', text)  # Remplacer les dates par 'Date'
     text = re.sub(r'\b\d{5}\b', 'CodePostal', text)  # Remplacer les codes postaux par 'CodePostal'
