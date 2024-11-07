@@ -1,18 +1,18 @@
 import json
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-# Charger le modèle LLaMA 2 et le tokenizer en local
-model_name = "meta-llama/Llama-2-7b-chat-hf"  # Assurez-vous d'avoir les droits pour ce modèle
+# Charger le modèle et le tokenizer FLAN-T5 en local
+model_name = "google/flan-t5-large"  # Utilisez 'flan-t5-small' si vous avez moins de ressources
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 
 def generate_medical_json(text: str) -> dict:
-    # Préparer le prompt pour le modèle LLaMA
+    # Préparer le prompt pour le modèle
     prompt = (
-        f"Analyse le texte médical suivant et retourne un JSON structuré avec les champs "
-        f"'symptomes', 'traitements', 'diagnostics': {text}"
+        f"Analyse le texte suivant et retourne un JSON structuré avec les champs 'symptomes', "
+        f"'traitements', 'diagnostics': {text}"
     )
 
     # Tokenizer et génération de la réponse
