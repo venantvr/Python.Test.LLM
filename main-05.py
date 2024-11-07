@@ -1,28 +1,26 @@
 import json
 
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Charger flan-t5 en local
-model_name = "google/flan-t5-small"  # Utilisez une version plus grande (base/large) si votre machine le permet
+# Charger GPT-Neo-125M
+model_name = "EleutherAI/gpt-neo-125M"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
 
 def generate_simplified_medical_json(text: str) -> dict:
-    # Prompt pour obtenir un résumé structuré
+    # Prompt pour structurer le texte en JSON
     prompt = (
-        f"Simplifie et retourne uniquement un JSON structuré pour ce texte médical. Utilise les catégories suivantes : "
-        f"'symptomes', 'traitements', 'diagnostics', et 'suivi'. Répond uniquement en JSON.\n\nTexte : {text}"
+        f"Simplifie le texte suivant et structure-le en format JSON avec les catégories 'symptomes', 'traitements', 'diagnostics', et 'suivi'. "
+        f"Répond uniquement en JSON.\n\nTexte : {text}"
     )
 
-    # Encoder le prompt et générer la réponse
+    # Tokenizer et génération de la réponse
     inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
     outputs = model.generate(inputs["input_ids"], max_length=256, num_beams=5, early_stopping=True)
 
     # Décoder la sortie en texte JSON
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
-    print(json_response)
 
     try:
         # Convertir en JSON
@@ -34,7 +32,7 @@ def generate_simplified_medical_json(text: str) -> dict:
     return structured_data
 
 
-# Texte médical plus complexe pour tester le modèle
+# Texte médical complexe pour tester le modèle
 text = (
     "Le patient de 65 ans se présente avec une toux productive, de la fièvre élevée (39,5 °C), des frissons et une "
     "douleur thoracique augmentée à l'inspiration. Il a également signalé un essoufflement et une fatigue importante. "
