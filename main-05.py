@@ -6,6 +6,7 @@ model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniL
 # Décrire deux symptômes médicaux pour comparaison
 symptome1 = "Le patient présente une toux sèche persistante accompagnée de fièvre modérée."
 symptome2 = "Le patient a une fièvre légère et tousse de manière intermittente sans production de mucus."
+symptome2 = "Le patient s'est cassé le bras."
 
 # Générer les embeddings pour chaque description de symptôme
 embedding1 = model.encode(symptome1, convert_to_tensor=True)
