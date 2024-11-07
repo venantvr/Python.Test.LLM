@@ -37,9 +37,12 @@ def detect_and_replace_entities(text):
 
 
 def rewrite_with_gpt2(text):
-    # Préparer le texte pour la reformulation
-    inputs = tokenizer.encode("Réécrire le texte pour anonymiser: " + text, return_tensors="pt")
-    outputs = model.generate(inputs, max_length=100, num_return_sequences=1, do_sample=True)
+    # Instruction concise pour guider le modèle à reformuler uniquement
+    input_text = f"Anonymiser et reformuler : {text}"
+    inputs = tokenizer.encode(input_text, return_tensors="pt", max_length=512, truncation=True)
+
+    # Générer un texte avec une longueur limitée pour éviter l'excès d'informations
+    outputs = model.generate(inputs, max_length=50, num_return_sequences=1, do_sample=True)
 
     # Décoder le texte généré
     rewritten_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
