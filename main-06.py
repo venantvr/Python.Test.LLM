@@ -2,9 +2,10 @@ import torch
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoTokenizer, AutoModel
 
-# Charger le tokenizer et le modèle CamemBERT-bio
-tokenizer = AutoTokenizer.from_pretrained("camembert-bio")
-model = AutoModel.from_pretrained("camembert-bio")
+# Charger le modèle CamemBERT standard
+model_name = "camembert-base"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
 
 # Décrire deux symptômes médicaux pour comparaison
 symptome1 = "Le patient présente une toux sèche persistante accompagnée de fièvre modérée."
