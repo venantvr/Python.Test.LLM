@@ -22,6 +22,8 @@ def generate_medical_json(text: str) -> dict:
     # Décoder le tenseur en texte
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
+    print(json_response)
+
     try:
         # Convertir la réponse en JSON
         structured_data = json.loads(json_response)
