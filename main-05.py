@@ -13,7 +13,7 @@ ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_str
 
 def extract_medical_entities(text: str) -> dict:
     # Extraire les entités nommées
-    entities = ner_pipeline(text, truncation=True, max_length=512)
+    entities = ner_pipeline(text)
 
     # Initialiser des listes pour chaque catégorie
     structured_data = {"symptomes": [], "traitements": [], "diagnostics": []}
