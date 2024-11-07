@@ -1,4 +1,5 @@
 import json
+import re
 
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
@@ -8,11 +9,25 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
 
 
+def extract_json_part(text):
+    """
+    Fonction pour extraire uniquement la partie JSON de la réponse.
+    Utilise des expressions régulières pour détecter le bloc JSON.
+    """
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        return match.group(0)
+    else:
+        return None
+
+
 def generate_medical_json(text: str) -> dict:
-    # Préparer le prompt pour le modèle
+    # Préparer le prompt pour le modèle avec un exemple de JSON attendu
     prompt = (
-        f"Analyse le texte médical suivant et retourne un JSON structuré avec les champs "
-        f"'symptomes', 'traitements', 'diagnostics'. Réponds uniquement en JSON : {text}"
+        f"Analyse le texte suivant et retourne uniquement un JSON strict structuré avec les champs 'symptomes', "
+        f"'traitements', 'diagnostics'. Voici un exemple de format attendu : "
+        f"{{'symptomes': ['toux sèche', 'fièvre modérée'], 'traitements': ['paracétamol'], 'diagnostics': []}}. "
+        f"Texte : {text}"
     )
 
     # Tokenizer et génération de la réponse
@@ -21,15 +36,20 @@ def generate_medical_json(text: str) -> dict:
 
     # Décoder le tenseur en texte
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    print("Réponse brute du modèle:", json_response)
 
-    print(json_response)
+    # Extraire uniquement la partie JSON
+    json_response = extract_json_part(json_response)
 
-    try:
-        # Convertir la réponse en JSON
-        structured_data = json.loads(json_response)
-    except json.JSONDecodeError:
-        print("Erreur lors de la conversion en JSON. Vérifiez la sortie du modèle.")
-        structured_data = {"error": "Format JSON incorrect"}
+    if json_response:
+        try:
+            # Convertir la réponse en JSON
+            structured_data = json.loads(json_response)
+        except json.JSONDecodeError:
+            print("Erreur lors de la conversion en JSON. Vérifiez la sortie du modèle.")
+            structured_data = {"error": "Format JSON incorrect"}
+    else:
+        structured_data = {"error": "Aucun JSON détecté"}
 
     return structured_data
 
