@@ -1,35 +1,26 @@
-from transformers import AutoModelForTokenClassification, AutoTokenizer, pipeline
+from transformers import T5ForConditionalGeneration, T5Tokenizer
 
-# Charger le modèle BERT pour la reconnaissance d'entités nommées en français
-model_name = "dbmdz/bert-base-french-europeana-cased"
-model = AutoModelForTokenClassification.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-# Créer un pipeline pour la reconnaissance d'entités nommées (NER)
-nlp_ner = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+# Charger le modèle mT5-small
+model_name = "google/mt5-small"
+model = T5ForConditionalGeneration.from_pretrained(model_name)
+tokenizer = T5Tokenizer.from_pretrained(model_name)
 
 
-def anonymize_text_with_bert(text):
-    # Utiliser BERT pour détecter les entités nommées
-    entities = nlp_ner(text)
-    anonymized_text = text
-    for entity in entities:
-        # Utiliser des noms significatifs pour chaque entité détectée
-        if entity['entity_group'] == "PER":
-            anonymized_text = anonymized_text.replace(entity['word'], "<PERSONNE>")
-        elif entity['entity_group'] == "LOC":
-            anonymized_text = anonymized_text.replace(entity['word'], "<LIEU>")
-        elif entity['entity_group'] == "ORG":
-            anonymized_text = anonymized_text.replace(entity['word'], "<ORGANISATION>")
-        elif entity['entity_group'] == "MISC":
-            anonymized_text = anonymized_text.replace(entity['word'], "<DIVERS>")
+def anonymize_with_t5(text):
+    # Préparer le texte en entrée en indiquant une tâche de paraphrase
+    input_text = f"paraphrase: {text} </s>"
+    inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
+
+    # Générer le texte paraphrasé
+    outputs = model.generate(inputs["input_ids"], max_length=512, num_return_sequences=1, do_sample=True)
+    anonymized_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     return anonymized_text
 
 
-# Exemple de texte à anonymiser
+# Exemple de texte
 text = "Jean Dupont habite à Paris depuis 2021. Son numéro de téléphone est 0123456789."
-anonymized_text = anonymize_text_with_bert(text)
+anonymized_text = anonymize_with_t5(text)
 
 print("Texte original :", text)
 print("Texte anonymisé :", anonymized_text)
