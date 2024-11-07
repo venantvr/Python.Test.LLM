@@ -1,7 +1,7 @@
 import json
 import re
+
 from transformers import AutoTokenizer, AutoModel
-import torch
 
 # Charger MiniLM pour l'extraction de caractéristiques
 model_name = "microsoft/MiniLM-L12-H384-uncased"
