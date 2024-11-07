@@ -7,6 +7,9 @@ model = SentenceTransformer("pritamdeka/BioBERT-mnli-snli-scinli-scitail-mednli-
 symptome1 = "Le patient présente une toux sèche persistante accompagnée de fièvre modérée."
 symptome2 = "Le patient a des boutons sur le nombril."
 
+symptome1 = "Le patient a une fracture de l'épaule."
+symptome2 = "Le patient prend un traitement pour une entorse."
+
 # Obtenir les embeddings de phrases
 embedding1 = model.encode(symptome1, convert_to_tensor=True)
 embedding2 = model.encode(symptome2, convert_to_tensor=True)
