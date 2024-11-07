@@ -1,34 +1,31 @@
 import re
 
-from flair.data import Sentence
-from flair.models import SequenceTagger
-from transformers import MT5ForConditionalGeneration, MT5Tokenizer
+from sentence_transformers import SentenceTransformer, util
+from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
 
-# Charger le modèle de NER de Flair pour la détection des entités
-tagger = SequenceTagger.load("flair/ner-french")
+# Charger le modèle NER de CamemBERT pour détecter les entités en français
+ner_model = "Jean-Baptiste/camembert-ner"
+ner_pipeline = pipeline("ner", model=ner_model, tokenizer=ner_model, aggregation_strategy="simple")
 
-# Charger le modèle mT5 pour la reformulation en français
-model_name = "google/mt5-small"  # Utiliser un modèle multilingue pour la paraphrase
-model = MT5ForConditionalGeneration.from_pretrained(model_name)
-tokenizer = MT5Tokenizer.from_pretrained(model_name)
+# Charger le modèle de paraphrase
+paraphrase_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 
 def detect_and_replace_entities(text):
-    # Détection des entités
-    sentence = Sentence(text)
-    tagger.predict(sentence)
+    # Détection des entités nommées avec CamemBERT
+    entities = ner_pipeline(text)
     anonymized_text = text
-    for entity in sentence.get_spans('ner'):
-        if entity.tag == "PER":
-            anonymized_text = anonymized_text.replace(entity.text, "Personne")
-        elif entity.tag == "LOC":
-            anonymized_text = anonymized_text.replace(entity.text, "Lieu")
-        elif entity.tag == "ORG":
-            anonymized_text = anonymized_text.replace(entity.text, "Organisation")
-        elif entity.tag == "MISC" or entity.tag == "DATE":
-            anonymized_text = anonymized_text.replace(entity.text, "Date")
+    for entity in entities:
+        if entity['entity_group'] == "PER":
+            anonymized_text = anonymized_text.replace(entity['word'], "Personne")
+        elif entity['entity_group'] == "LOC":
+            anonymized_text = anonymized_text.replace(entity['word'], "Lieu")
+        elif entity['entity_group'] == "ORG":
+            anonymized_text = anonymized_text.replace(entity['word'], "Organisation")
+        elif entity['entity_group'] == "MISC" or entity['entity_group'] == "DATE":
+            anonymized_text = anonymized_text.replace(entity['word'], "Date")
 
-    # Utiliser des expressions régulières pour anonymiser les numéros de téléphone
+    # Anonymiser les numéros de téléphone
     anonymized_text = re.sub(r'\b\d{10}\b', 'NuméroDeTéléphone', anonymized_text)
     anonymized_text = re.sub(r'\b\d{2} \d{2} \d{2} \d{2} \d{2}\b', 'NuméroDeTéléphone', anonymized_text)
     anonymized_text = re.sub(r'\+33\s?\d{9}', 'NuméroDeTéléphone', anonymized_text)
@@ -36,18 +33,11 @@ def detect_and_replace_entities(text):
     return anonymized_text
 
 
-def rewrite_with_mt5(text):
-    # Préparer le texte pour la reformulation avec une instruction précise
-    input_text = f"Anonymiser et reformuler : {text}"
-    inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
-
-    # Générer une reformulation concise et pertinente
-    outputs = model.generate(inputs["input_ids"], max_length=50, num_return_sequences=1, do_sample=True,
-                             temperature=0.7)
-
-    # Décoder le texte généré
-    rewritten_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return rewritten_text
+def paraphrase_text(text):
+    # Générer une paraphrase du texte
+    paraphrases = paraphrase_model.encode([text], convert_to_tensor=True)
+    closest_paraphrase = util.paraphrase_mining(paraphrase_model, [text])[0][2]
+    return closest_paraphrase
 
 
 def chatbot():
@@ -58,9 +48,11 @@ def chatbot():
             print("Agent : Au revoir!")
             break
 
-        # Anonymiser et reformuler le texte
+        # Anonymiser les entités détectées dans le texte
         anonymized_text = detect_and_replace_entities(user_input)
-        rewritten_text = rewrite_with_mt5(anonymized_text)
+
+        # Paraphraser le texte anonymisé
+        rewritten_text = paraphrase_text(anonymized_text)
 
         print("Agent (texte anonymisé) :", rewritten_text)
 
