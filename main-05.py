@@ -1,45 +1,14 @@
-import json
+from gliner import GLiNER
 
-from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
+model = GLiNER.from_pretrained("almanach/camembert-bio-gliner-v0.1")
 
-# Charger le modèle NER biomédical
-model_name = "almanach/camembert-bio-gliner-v0.1"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForTokenClassification.from_pretrained(model_name)
+text = """
+Mme A.P. âgée de 52 ans, non tabagique, ayant un diabète de type 2 a été hospitalisée pour une pneumopathie infectieuse. Cette patiente présentait depuis 2 ans des infections respiratoires traités en ambulatoire. L’examen physique a trouvé une fièvre à 38ºc et un foyer de râles crépitants de la base pulmonaire droite.
+"""
 
-# Créer un pipeline pour la tâche de NER
-ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+labels = ["Âge", "Patient", "Maladie", "Symptômes"]
 
+entities = model.predict_entities(text, labels, threshold=0.5, flat_ner=True)
 
-def extract_medical_entities(text: str) -> dict:
-    # Extraire les entités nommées
-    entities = ner_pipeline(text)
-
-    # Initialiser des listes pour chaque catégorie
-    structured_data = {"symptomes": [], "traitements": [], "diagnostics": []}
-
-    # Classifier les entités extraites
-    for entity in entities:
-        entity_text = entity['word']
-        entity_label = entity['entity_group']  # Utiliser 'entity_group' si le modèle l'intègre
-
-        # Classification simplifiée pour structurer en catégories
-        if entity_label == "Anatomie":
-            structured_data["symptomes"].append(entity_text)
-        elif entity_label == "Traitement":
-            structured_data["traitements"].append(entity_text)
-        elif entity_label == "Pathologie":
-            structured_data["diagnostics"].append(entity_text)
-
-    return structured_data
-
-
-# Exemple de texte médical
-text = (
-    "Le patient présente une toux sèche persistante accompagnée de fièvre modérée. "
-    "On lui a prescrit du paracétamol pour soulager la douleur. Le diagnostic probable est une infection virale."
-)
-
-# Extraire les entités et les structurer en JSON
-json_output = extract_medical_entities(text)
-print(json.dumps(json_output, indent=4, ensure_ascii=False))
+for entity in entities:
+    print(entity["text"], "=>", entity["label"])
