@@ -10,6 +10,7 @@ model = AutoModel.from_pretrained(model_name)
 # Définir deux descriptions de symptômes pour comparaison
 symptome1 = "Le patient présente une toux sèche persistante accompagnée de fièvre modérée."
 symptome2 = "Le patient a une fièvre légère et tousse de manière intermittente sans production de mucus."
+symptome2 = "Le patient a des boutons sur le nombril."
 
 
 # Fonction pour obtenir les embeddings moyens d'une phrase
