@@ -2,25 +2,23 @@ import json
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Charger le modèle BloomZ pour générer du JSON en français
-model_name = "bigscience/bloomz-560m"
+# Utiliser distilgpt2 pour réduire la consommation de mémoire
+model_name = "distilgpt2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
 
 def generate_simplified_medical_json(text: str) -> dict:
-    # Prompt avec un exemple pour guider le modèle
+    # Prompt avec exemple pour structurer la sortie en JSON
     prompt = (
         f"Simplifie et structure le texte médical suivant en JSON avec les catégories 'symptomes', 'traitements', "
-        f"'diagnostics', et 'suivi'. Répond uniquement en JSON. Exemple de format attendu :\n\n"
-        f"{{'symptomes': ['exemple symptôme'], 'traitements': ['exemple traitement'], "
-        f"'diagnostics': ['exemple diagnostic'], 'suivi': ['exemple suivi']}}\n\n"
+        f"'diagnostics', et 'suivi'. Répond uniquement en JSON.\n\n"
         f"Texte : {text}\n\n"
     )
 
-    # Tokenizer et génération de la réponse
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
-    outputs = model.generate(inputs["input_ids"], max_new_tokens=300, num_beams=5, early_stopping=True)
+    # Tokenizer avec max_length pour éviter les dépassements de mémoire
+    inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
+    outputs = model.generate(inputs["input_ids"], max_new_tokens=200, num_beams=2, early_stopping=True)
 
     # Décoder la sortie en texte JSON
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -36,7 +34,7 @@ def generate_simplified_medical_json(text: str) -> dict:
     return structured_data
 
 
-# Texte médical complexe pour tester le modèle
+# Exemple de texte médical
 text = (
     "Le patient de 65 ans se présente avec une toux productive, de la fièvre élevée (39,5 °C), des frissons et une "
     "douleur thoracique augmentée à l'inspiration. Il a également signalé un essoufflement et une fatigue importante. "
