@@ -1,36 +1,36 @@
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import MT5ForConditionalGeneration, MT5Tokenizer
 
-# Charger le modèle mT5-small
+# Load the mT5-small model and MT5Tokenizer
 model_name = "google/mt5-small"
-model = T5ForConditionalGeneration.from_pretrained(model_name)
-tokenizer = T5Tokenizer.from_pretrained(model_name)
+model = MT5ForConditionalGeneration.from_pretrained(model_name)
+tokenizer = MT5Tokenizer.from_pretrained(model_name)
 
 
 def anonymize_with_rewriting(text):
-    # Fournir une instruction plus explicite pour une réécriture anonymisée
+    # Provide a more explicit instruction for anonymized rewriting
     input_text = f"Rewrite the sentence to anonymize sensitive information: {text} </s>"
     inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
 
-    # Générer plusieurs variantes pour augmenter les chances d'une reformulation satisfaisante
+    # Generate multiple variants to increase the chances of a satisfactory reformulation
     outputs = model.generate(
         inputs["input_ids"],
         max_length=512,
-        num_return_sequences=3,  # Essayer plusieurs reformulations
+        num_return_sequences=3,  # Generate multiple reformulations
         do_sample=True,
-        temperature=0.7  # Ajuster la température pour varier les reformulations
+        temperature=0.7  # Adjust temperature for diversity in reformulations
     )
 
-    # Décoder et retourner la première reformulation valide
+    # Decode and return the first valid reformulation
     for output in outputs:
         anonymized_text = tokenizer.decode(output, skip_special_tokens=True)
-        if "<extra_id" not in anonymized_text:  # Vérifier que la reformulation est correcte
+        if "<extra_id" not in anonymized_text:  # Ensure a correct reformulation
             return anonymized_text
 
-    # Si aucune reformulation n'est bonne, retourner un message par défaut
+    # Default message if no valid reformulation is produced
     return "Anonymisation non réussie"
 
 
-# Exemple de texte à anonymiser
+# Example text to anonymize
 text = "Jean Dupont habite à Paris depuis 2021. Son numéro de téléphone est 0123456789."
 anonymized_text = anonymize_with_rewriting(text)
 
