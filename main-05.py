@@ -1,12 +1,38 @@
+import json
+
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 
-# Charger le modèle et le tokenizer pour l'analyse biomédicale en français
-model_name = "almanach/camembert-bio-base"
+# Charger le modèle NER biomédical
+model_name = "almanach/camembert-bio-gliner-v0.1"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 
 # Créer un pipeline pour la tâche de NER
-ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer)
+ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+
+
+def extract_medical_entities(text: str) -> dict:
+    # Extraire les entités nommées
+    entities = ner_pipeline(text)
+
+    # Initialiser des listes pour chaque catégorie
+    structured_data = {"symptomes": [], "traitements": [], "diagnostics": []}
+
+    # Classifier les entités extraites
+    for entity in entities:
+        entity_text = entity['word']
+        entity_label = entity['entity_group']  # Utiliser 'entity_group' si le modèle l'intègre
+
+        # Classification simplifiée pour structurer en catégories
+        if entity_label == "Anatomie":
+            structured_data["symptomes"].append(entity_text)
+        elif entity_label == "Traitement":
+            structured_data["traitements"].append(entity_text)
+        elif entity_label == "Pathologie":
+            structured_data["diagnostics"].append(entity_text)
+
+    return structured_data
+
 
 # Exemple de texte médical
 text = (
@@ -14,33 +40,6 @@ text = (
     "On lui a prescrit du paracétamol pour soulager la douleur. Le diagnostic probable est une infection virale."
 )
 
-# Utiliser le pipeline pour extraire les entités
-entities = ner_pipeline(text)
-
-# Afficher les entités extraites
-print("Entités extraites:", entities)
-
-import json
-
-
-def categorize_entities(entities):
-    structured_data = {"symptomes": [], "traitements": [], "diagnostics": []}
-
-    for entity in entities:
-        entity_text = entity['word']
-        entity_label = entity['entity']
-
-        # Ajouter une logique simple pour classer les entités
-        if "SYMPTOM" in entity_label.upper() or "ANATOMY" in entity_label.upper():
-            structured_data["symptomes"].append(entity_text)
-        elif "TREATMENT" in entity_label.upper() or "DRUG" in entity_label.upper():
-            structured_data["traitements"].append(entity_text)
-        elif "DIAGNOSIS" in entity_label.upper() or "DISEASE" in entity_label.upper():
-            structured_data["diagnostics"].append(entity_text)
-
-    return structured_data
-
-
-# Structurer les entités en JSON
-json_output = categorize_entities(entities)
+# Extraire les entités et les structurer en JSON
+json_output = extract_medical_entities(text)
 print(json.dumps(json_output, indent=4, ensure_ascii=False))
