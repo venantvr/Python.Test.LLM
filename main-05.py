@@ -3,7 +3,7 @@ import json
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Charger le modèle BloomZ pour générer du JSON en français
-model_name = "bigscience/bloomz-3b"
+model_name = "bigscience/bloomz-560m"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
