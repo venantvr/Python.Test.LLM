@@ -19,9 +19,7 @@ def generate_medical_json(text: str) -> dict:
     inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
     outputs = model.generate(inputs["input_ids"], max_length=256, num_beams=5, early_stopping=True)
 
-    print(outputs[0])
-
-    # Décoder et structurer la réponse
+    # Décoder le tenseur en texte
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
     try:
