@@ -16,8 +16,8 @@ def generate_simplified_medical_json(text: str) -> dict:
     )
 
     # Tokenizer et génération de la réponse
-    inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
-    outputs = model.generate(inputs["input_ids"], max_length=256, num_beams=5, early_stopping=True)
+    inputs = tokenizer(prompt, return_tensors="pt", truncation=True)
+    outputs = model.generate(inputs["input_ids"], max_new_tokens=256, num_beams=5, early_stopping=True)
 
     # Décoder la sortie en texte JSON
     json_response = tokenizer.decode(outputs[0], skip_special_tokens=True)
