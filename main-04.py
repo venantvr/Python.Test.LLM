@@ -1,68 +1,62 @@
-from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+import re
 
-# Charger le modèle NER pour détecter les entités et comprendre les rôles
+from sentence_transformers import SentenceTransformer, util
+from transformers import pipeline
+
+# Charger le modèle NER de CamemBERT pour détecter les entités en français
 ner_model = "Jean-Baptiste/camembert-ner"
 ner_pipeline = pipeline("ner", model=ner_model, tokenizer=ner_model, aggregation_strategy="simple")
 
-# Charger FLAN-T5 pour la reformulation et la contextualisation
-model_name = "google/flan-t5-small"  # Modèle T5 spécialisé pour le suivi d'instructions
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+# Charger le modèle de paraphrase multilingue
+paraphrase_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
 
 
-def detect_entities_and_roles(text):
-    # Détection des entités et attribution de rôles spécifiques
+def detect_and_replace_entities(text):
+    # Détection des entités nommées avec CamemBERT
     entities = ner_pipeline(text)
     anonymized_text = text
-    roles = []
-
     for entity in entities:
-        role = ""
         if entity['entity_group'] == "PER":
-            role = "résident"
             anonymized_text = anonymized_text.replace(entity['word'], "Personne")
         elif entity['entity_group'] == "LOC":
-            role = "lieu de résidence"
             anonymized_text = anonymized_text.replace(entity['word'], "Lieu")
         elif entity['entity_group'] == "ORG":
-            role = "entreprise"
             anonymized_text = anonymized_text.replace(entity['word'], "Organisation")
         elif entity['entity_group'] == "MISC" or entity['entity_group'] == "DATE":
-            role = "date ou événement"
             anonymized_text = anonymized_text.replace(entity['word'], "Date")
-        roles.append(f"{entity['word']} est un {role}")
 
-    return anonymized_text, roles
+    # Masquer les numéros de téléphone avec des expressions régulières
+    anonymized_text = re.sub(r'\b\d{10}\b', 'NuméroDeTéléphone', anonymized_text)
+    anonymized_text = re.sub(r'\b\d{2} \d{2} \d{2} \d{2} \d{2}\b', 'NuméroDeTéléphone', anonymized_text)
+    anonymized_text = re.sub(r'\+33\s?\d{9}', 'NuméroDeTéléphone', anonymized_text)
+
+    return anonymized_text
 
 
-def rewrite_with_roles(text, roles):
-    # Instruction explicite pour reformuler en tenant compte des rôles des entités
-    input_text = f"Reformule le texte suivant en tenant compte des rôles : {', '.join(roles)} : {text}"
-    inputs = tokenizer(input_text, return_tensors="pt", max_length=512, truncation=True)
+def paraphrase_text(text):
+    # Générer des paraphrases en utilisant le modèle de paraphrase multilingue
+    paraphrased_embeddings = paraphrase_model.encode([text], convert_to_tensor=True)
+    paraphrase_candidates = util.paraphrase_mining(paraphrase_model, [text])[0][2]
 
-    # Générer le texte reformulé
-    outputs = model.generate(inputs["input_ids"], max_length=100, num_return_sequences=1, do_sample=True)
-
-    # Décoder le texte généré
-    rewritten_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return rewritten_text
+    # Retourner la paraphrase sans ajout de contenu
+    return paraphrase_candidates
 
 
 def chatbot():
-    print("Bienvenue dans l'agent d'anonymisation avec compréhension des rôles. Tapez 'exit' pour quitter.")
+    print("Bienvenue dans l'agent d'anonymisation. Tapez 'exit' pour quitter.")
     while True:
         user_input = input("Vous : ")
         if user_input.lower() == "exit":
             print("Agent : Au revoir!")
             break
 
-        # Détecter les entités et leurs rôles
-        anonymized_text, roles = detect_entities_and_roles(user_input)
+        # Anonymiser les entités détectées dans le texte
+        anonymized_text = detect_and_replace_entities(user_input)
 
-        # Reformuler en tenant compte des rôles contextuels
-        rewritten_text = rewrite_with_roles(anonymized_text, roles)
+        # Paraphraser le texte anonymisé sans inventer de contexte
+        rewritten_text = paraphrase_text(anonymized_text)
 
-        print("Agent (texte anonymisé et reformulé) :", rewritten_text)
+        print("Agent (texte anonymisé) :", rewritten_text)
 
 
 # Lancer le chatbot
