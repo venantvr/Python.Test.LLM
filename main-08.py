@@ -2,9 +2,9 @@ from jsonformer import Jsonformer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # Charger le modèle BLOOM et le tokenizer
-model_name = "bigscience/bloom-1b7"  # Variante plus légère de BLOOM
+model_name = "bigscience/bloom-1b7"
 model = AutoModelForCausalLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name, padding=True)
 
 # Définir le schéma JSON pour structurer la sortie
 json_schema = {
@@ -70,9 +70,15 @@ medical_text = """
 Patient nommé Jean Dupont, 52 ans, homme, avec des antécédents d'hypertension et de diabète de type 2. Récemment, il a ressenti des douleurs thoraciques sévères lors d'exercices physiques et un essoufflement modéré même au repos. Il a été diagnostiqué avec une maladie coronarienne le 1er juin 2024 et cherche une consultation ainsi qu'un plan de traitement, avec une préférence pour un rendez-vous le 1er juillet 2024.
 """
 
+# Encoder le texte d'entrée avec padding et convertir en tenseurs
+inputs = tokenizer(medical_text, return_tensors="pt", padding=True, truncation=True)
+
 # Initialiser Jsonformer avec le modèle, le tokenizer, le schéma JSON et le texte médical
 jsonformer = Jsonformer(model, tokenizer, json_schema, medical_text)
 
 # Générer les données structurées en JSON
-generated_data = jsonformer()
-print(generated_data)
+try:
+    generated_data = jsonformer()
+    print(generated_data)
+except RuntimeError as e:
+    print(f"Erreur lors de la génération : {e}")
