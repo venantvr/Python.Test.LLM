@@ -3,10 +3,13 @@ import json
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Charger le modèle Ministral-8B-Instruct-2410
+# Remplacez "YOUR_API_KEY" par votre token Hugging Face
+api_key = "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"
 model_name = "mistralai/Ministral-8B-Instruct-2410"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+
+# Charger le modèle et le tokenizer avec le token d'API
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=api_key)
+model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=api_key)
 
 
 def generate_structured_json(text: str) -> dict:
