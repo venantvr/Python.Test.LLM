@@ -13,46 +13,11 @@ model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=api_key)
 
 
 def generate_structured_json(text: str) -> dict:
-    json = """
-    {
-  "request_summary": {
-    "patient_info": {
-      "name": "John Doe",
-      "age": 45,
-      "gender": "Male"
-    },
-    "medical_history": [
-      {
-        "condition": "Hypertension",
-        "diagnosed_date": "2015-06-15",
-        "treatment": "Lisinopril 10 mg daily"
-      }
-    ],
-    "current_symptoms": [
-      {
-        "symptom": "Chest pain",
-        "description": "Sharp pain in the chest, occurring primarily during physical exertion.",
-        "duration": "2 weeks",
-        "severity": "Severe"
-      }
-    ],
-    "pathology": {
-      "name": "Coronary Artery Disease",
-      "diagnosed_date": "2024-06-01",
-      "previous_treatments": "None"
-    },
-    "request_details": {
-      "purpose": "Consultation and Treatment Plan",
-      "preferred_appointment_date": "2024-07-01",
-      "additional_notes": "Seeking a comprehensive evaluation ..."
-    }
-  }
-}
-    """
 
     # Préparer le prompt pour le modèle
     prompt = (
-        f"Veuillez analyser le texte médical suivant et fournir une sortie JSON structurée au format {json} "
+        f"Veuillez analyser le texte médical suivant et fournir une sortie JSON structurée avec les champs listes "
+        f"'medical_history', 'current_symptoms', 'pathology' et 'request_details'. "
         f"Répondez uniquement en JSON.\n\nTexte : {text}"
     )
 
@@ -94,7 +59,13 @@ text = (
     "inférieur droit. Une radiographie pulmonaire révèle une opacité dans le même lobe, confirmant la suspicion de "
     "pneumonie bactérienne. Un traitement par antibiotiques est immédiatement prescrit, en commençant par une "
     "administration de ceftriaxone intraveineuse, complétée par de l'azithromycine orale pour couvrir les germes "
-    "atypiques."
+    "atypiques. Le patient est également hydraté par voie intraveineuse et reçoit de l'oxygène pour maintenir une "
+    "saturation en oxygène supérieure à 92 %. Des analyses de sang montrent une élévation des marqueurs inflammatoires, "
+    "y compris la CRP et les globules blancs, ce qui renforce le diagnostic. Une culture des expectorations est en cours "
+    "pour identifier le pathogène exact et ajuster l'antibiothérapie si nécessaire. Le patient est suivi de près pour "
+    "évaluer la réponse au traitement, avec une amélioration attendue dans les 48 à 72 heures. En cas de complications, "
+    "telles qu'un abcès pulmonaire ou une détérioration de l'état respiratoire, un transfert en soins intensifs serait "
+    "envisagé."
 )
 
 # Générer le JSON structuré
