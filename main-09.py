@@ -1,9 +1,9 @@
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import pipeline
 
-# Charger le tokenizer et le modèle CamemBERT-bio
-tokenizer = AutoTokenizer.from_pretrained("camembert-bio")
-model = AutoModelForTokenClassification.from_pretrained("camembert-bio")
+# Charger le tokenizer et le modèle AliBERT
+tokenizer = AutoTokenizer.from_pretrained("AliBERT")
+model = AutoModelForTokenClassification.from_pretrained("AliBERT")
 
 # Créer une pipeline NER
 nlp = pipeline("ner", model=model, tokenizer=tokenizer)
