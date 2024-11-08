@@ -30,9 +30,9 @@ Un grand merci par avance
 """
 
 # labels = ["Âge", "Patient", "Maladie", "Symptômes"]
-labels = ["Âge", "Patient", "Maladie", "Symptômes", "Traitement", "Habitude de vie", "Antécédent médical"]
+labels = ["Âge", "Patient", "Maladie", "Symptômes", "Traitement", "Habitude de vie", "Antécédent médical", "Spécialité"]
 
-entities = model.predict_entities(text, labels, threshold=0.3, flat_ner=True)
+entities = model.predict_entities(text, labels, threshold=0.1, flat_ner=True)
 
 for entity in entities:
     print(entity["text"], "=>", entity["label"])
