@@ -8,10 +8,16 @@ model = GLiNER.from_pretrained("almanach/camembert-bio-gliner-v0.1")
 # L’examen physique a trouvé une fièvre à 38ºc et un foyer de râles crépitants de la base pulmonaire droite.
 # """
 
-text = """Bonjour,
-Je cherche un spécialiste en dermatologie officiant dans une structure bien équipée afin de pratiquer des actes de chirurgie tel que le retrait de grains de beauté (non cancéreux) sans laisser de cicatrices...
-Cordialement,
-SH"""
+# text = """Bonjour,
+# Je cherche un spécialiste en dermatologie officiant dans une structure bien équipée afin de pratiquer des actes de chirurgie tel que le retrait de grains de beauté (non cancéreux) sans laisser de cicatrices...
+# Cordialement,
+# SH"""
+
+text = """
+Bonjour, 
+Ma fille a un très gros rhume des foins, Nez qui coule et les yeux qui pleurent,  je lui donne du Zirtex et du spray nasal. mais cela ne la soulage pas longtemps.
+Je recherche un allergologue pour lui faire des tests et trouver une solution pour la soulagée. Je vous remercie d'avance, Mme Michu
+"""
 
 # labels = ["Âge", "Patient", "Maladie", "Symptômes"]
 labels = ["Âge", "Patient", "Maladie", "Symptômes", "Habitude de vie", "Antécédent médical"]
