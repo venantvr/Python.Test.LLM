@@ -5,3 +5,4 @@ fastapi~=0.115.4
 gliner~=0.2.13
 googlemaps~=4.10.0
 geopy~=2.4.1
+jsonformer~=0.12.0
