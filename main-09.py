@@ -12,7 +12,7 @@ json_schema = {
             "type": "object",
             "properties": {
                 "name": {"type": "string"},
-                "age": {"type": "integer"},
+                "age": {"type": "string"},  # Remplacer "integer" par "string"
                 "gender": {"type": "string"}
             }
         },
@@ -25,6 +25,34 @@ json_schema = {
                     "diagnosed_date": {"type": "string", "format": "date"},
                     "treatment": {"type": "string"}
                 }
+            }
+        },
+        "current_symptoms": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "symptom": {"type": "string"},
+                    "description": {"type": "string"},
+                    "duration": {"type": "string"},
+                    "severity": {"type": "string"}
+                }
+            }
+        },
+        "pathology": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "diagnosed_date": {"type": "string", "format": "date"},
+                "previous_treatments": {"type": "string"}
+            }
+        },
+        "request_details": {
+            "type": "object",
+            "properties": {
+                "purpose": {"type": "string"},
+                "preferred_appointment_date": {"type": "string", "format": "date"},
+                "additional_notes": {"type": "string"}
             }
         }
     }
