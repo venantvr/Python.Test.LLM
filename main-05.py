@@ -13,10 +13,20 @@ model = GLiNER.from_pretrained("almanach/camembert-bio-gliner-v0.1")
 # Cordialement,
 # SH"""
 
+# text = """
+# Bonjour,
+# Ma fille a un très gros rhume des foins, Nez qui coule et les yeux qui pleurent,  je lui donne du Zirtex et du spray nasal. mais cela ne la soulage pas longtemps.
+# Je recherche un allergologue pour lui faire des tests et trouver une solution pour la soulagée. Je vous remercie d'avance, Mme Michu
+# """
+
 text = """
-Bonjour, 
-Ma fille a un très gros rhume des foins, Nez qui coule et les yeux qui pleurent,  je lui donne du Zirtex et du spray nasal. mais cela ne la soulage pas longtemps.
-Je recherche un allergologue pour lui faire des tests et trouver une solution pour la soulagée. Je vous remercie d'avance, Mme Michu
+'Hello l''équipe,
+
+Notre fille de 8 mois pleure plus d''une dizaine de fois / nuit.
+Nous aimerions consulter "LE" spécialiste du sommeil pour les bébés. 
+Pédiatre spécialisé dans le sommeil ? Autres spécialistes ? Il me semble qu''il y''a un centre (HP) qui a un service dédié à ce sujet.
+
+Un grand merci par avance 
 """
 
 # labels = ["Âge", "Patient", "Maladie", "Symptômes"]
