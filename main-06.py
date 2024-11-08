@@ -13,10 +13,58 @@ model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=api_key)
 
 
 def generate_structured_json(text: str) -> dict:
+    json = """
+    {
+  "request_summary": {
+    "patient_info": {
+      "name": "John Doe",
+      "age": 45,
+      "gender": "Male"
+    },
+    "medical_history": [
+      {
+        "condition": "Hypertension",
+        "diagnosed_date": "2015-06-15",
+        "treatment": "Lisinopril 10 mg daily"
+      },
+      {
+        "condition": "Type 2 Diabetes",
+        "diagnosed_date": "2018-04-20",
+        "treatment": "Metformin 500 mg twice daily"
+      }
+    ],
+    "current_symptoms": [
+      {
+        "symptom": "Chest pain",
+        "description": "Sharp pain in the chest, occurring primarily during physical exertion.",
+        "duration": "2 weeks",
+        "severity": "Severe"
+      },
+      {
+        "symptom": "Shortness of breath",
+        "description": "Difficulty breathing even when at rest.",
+        "duration": "2 weeks",
+        "severity": "Moderate"
+      }
+    ],
+    "pathology": {
+      "name": "Coronary Artery Disease",
+      "diagnosed_date": "2024-06-01",
+      "previous_treatments": "None"
+    },
+    "request_details": {
+      "purpose": "Consultation and Treatment Plan",
+      "preferred_appointment_date": "2024-07-01",
+      "additional_notes": "Seeking a comprehensive evaluation and treatment options for newly diagnosed coronary artery disease."
+    }
+  }
+}
+    """
+
     # Préparer le prompt pour le modèle
     prompt = (
-        f"Veuillez analyser le texte médical suivant et fournir une sortie JSON structurée avec les champs "
-        f"'symptomes', 'traitements', 'diagnostics' et 'suivi'. Répondez uniquement en JSON.\n\nTexte : {text}"
+        f"Veuillez analyser le texte médical suivant et fournir une sortie JSON structurée au format {json} "
+        f"Répondez uniquement en JSON.\n\nTexte : {text}"
     )
 
     # Tokenizer le prompt avec attention_mask
