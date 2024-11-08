@@ -1,12 +1,12 @@
 from jsonformer import Jsonformer
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# Charger le modèle Mistral 7B en local
-model_name = "mistralai/Mistral-7B-v0.1"  # Assurez-vous d'avoir ce modèle téléchargé
+# Charger le modèle Falcon 7B et le tokenizer en local
+model_name = "tiiuae/falcon-7b"
 model = AutoModelForCausalLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-# Définir le schéma JSON
+# Définir le schéma JSON pour structurer la sortie
 json_schema = {
     "type": "object",
     "properties": {
@@ -65,7 +65,7 @@ json_schema = {
     }
 }
 
-# Texte décrivant la problématique médicale
+# Texte médical en français décrivant la problématique médicale
 medical_text = """
 Patient nommé Jean Dupont, 52 ans, homme, avec des antécédents d'hypertension et de diabète de type 2. 
 Récemment, il a ressenti des douleurs thoraciques sévères lors d'exercices physiques et un essoufflement 
