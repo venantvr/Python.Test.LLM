@@ -94,13 +94,7 @@ text = (
     "inférieur droit. Une radiographie pulmonaire révèle une opacité dans le même lobe, confirmant la suspicion de "
     "pneumonie bactérienne. Un traitement par antibiotiques est immédiatement prescrit, en commençant par une "
     "administration de ceftriaxone intraveineuse, complétée par de l'azithromycine orale pour couvrir les germes "
-    "atypiques. Le patient est également hydraté par voie intraveineuse et reçoit de l'oxygène pour maintenir une "
-    "saturation en oxygène supérieure à 92 %. Des analyses de sang montrent une élévation des marqueurs inflammatoires, "
-    "y compris la CRP et les globules blancs, ce qui renforce le diagnostic. Une culture des expectorations est en cours "
-    "pour identifier le pathogène exact et ajuster l'antibiothérapie si nécessaire. Le patient est suivi de près pour "
-    "évaluer la réponse au traitement, avec une amélioration attendue dans les 48 à 72 heures. En cas de complications, "
-    "telles qu'un abcès pulmonaire ou une détérioration de l'état respiratoire, un transfert en soins intensifs serait "
-    "envisagé."
+    "atypiques."
 )
 
 # Générer le JSON structuré
