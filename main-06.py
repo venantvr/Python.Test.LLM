@@ -19,17 +19,20 @@ def generate_structured_json(text: str) -> dict:
         f"'symptomes', 'traitements', 'diagnostics' et 'suivi'. Répondez uniquement en JSON.\n\nTexte : {text}"
     )
 
-    # Tokenizer le prompt
+    # Tokenizer le prompt avec attention_mask
     inputs = tokenizer(prompt, return_tensors="pt", max_length=1024, truncation=True)
+    inputs["attention_mask"] = torch.ones(inputs.input_ids.shape, dtype=torch.long)
 
-    # Générer la réponse
+    # Spécifier pad_token_id pour éviter l’avertissement
     with torch.no_grad():
         outputs = model.generate(
             inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
             max_length=512,
             num_beams=5,
             early_stopping=True,
-            no_repeat_ngram_size=2
+            no_repeat_ngram_size=2,
+            pad_token_id=tokenizer.eos_token_id  # Utiliser le token de fin comme pad_token_id
         )
 
     # Décoder la sortie
