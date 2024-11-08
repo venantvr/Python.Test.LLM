@@ -13,12 +13,11 @@ model = AutoModelForCausalLM.from_pretrained(model_name, use_auth_token=api_key)
 
 
 def generate_structured_json(text: str) -> dict:
-
     # Préparer le prompt pour le modèle
     prompt = (
-        f"Veuillez analyser le texte médical suivant et fournir une sortie JSON structurée avec les champs listes "
+        f"Veuillez analyser le texte médical suivant et fournir une sortie JSON structurée avec les champs "
         f"'medical_history', 'current_symptoms', 'pathology' et 'request_details'. "
-        f"Répondez uniquement en JSON.\n\nTexte : {text}"
+        f"Répondez uniquement en JSON.\nTexte : {text}"
     )
 
     # Tokenizer le prompt avec attention_mask
@@ -52,21 +51,17 @@ def generate_structured_json(text: str) -> dict:
 
 
 # Exemple de texte médical
-text = (
-    "Le patient de 65 ans se présente avec une toux productive, de la fièvre élevée (39,5 °C), des frissons et une "
-    "douleur thoracique augmentée à l'inspiration. Il a également signalé un essoufflement et une fatigue importante. "
-    "Lors de l'auscultation, des râles crépitants et une diminution des bruits respiratoires sont notés dans le lobe "
-    "inférieur droit. Une radiographie pulmonaire révèle une opacité dans le même lobe, confirmant la suspicion de "
-    "pneumonie bactérienne. Un traitement par antibiotiques est immédiatement prescrit, en commençant par une "
-    "administration de ceftriaxone intraveineuse, complétée par de l'azithromycine orale pour couvrir les germes "
-    "atypiques. Le patient est également hydraté par voie intraveineuse et reçoit de l'oxygène pour maintenir une "
-    "saturation en oxygène supérieure à 92 %. Des analyses de sang montrent une élévation des marqueurs inflammatoires, "
-    "y compris la CRP et les globules blancs, ce qui renforce le diagnostic. Une culture des expectorations est en cours "
-    "pour identifier le pathogène exact et ajuster l'antibiothérapie si nécessaire. Le patient est suivi de près pour "
-    "évaluer la réponse au traitement, avec une amélioration attendue dans les 48 à 72 heures. En cas de complications, "
-    "telles qu'un abcès pulmonaire ou une détérioration de l'état respiratoire, un transfert en soins intensifs serait "
-    "envisagé."
-)
+text = """
+'Consultation endocrino :  il y'' à 15 ans endocrinologues, suivi par son médecin traitant. 
+Consultation gynéco : il y''a 3 ans, avec échographie thyroïdienne = thyroïdite
+
+Normalement indication d''être suivi tous les 6 mois par un endocrinologue.
+
+Poids stable mais menstruation irrégulière, aménorrhée pendant 5 mois = la gynécologue dit que c''est surement lié aux hormones ou stress
+
+Pas de lettre de recommandation 
+Pas de dernier bilan sanguin thyroïdien'
+"""
 
 # Générer le JSON structuré
 json_output = generate_structured_json(text)
