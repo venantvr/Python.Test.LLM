@@ -4,7 +4,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Remplacez "YOUR_API_KEY" par votre token Hugging Face
-api_key = "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"
+api_key = "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"
 model_name = "mistralai/Ministral-8B-Instruct-2410"
 
 # Charger le modèle et le tokenizer avec le token d'API
