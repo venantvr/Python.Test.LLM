@@ -54,11 +54,8 @@ def generate_structured_json(text: str) -> dict:
 text = """
 'Consultation endocrino :  il y'' à 15 ans endocrinologues, suivi par son médecin traitant. 
 Consultation gynéco : il y''a 3 ans, avec échographie thyroïdienne = thyroïdite
-
 Normalement indication d''être suivi tous les 6 mois par un endocrinologue.
-
 Poids stable mais menstruation irrégulière, aménorrhée pendant 5 mois = la gynécologue dit que c''est surement lié aux hormones ou stress
-
 Pas de lettre de recommandation 
 Pas de dernier bilan sanguin thyroïdien'
 """
