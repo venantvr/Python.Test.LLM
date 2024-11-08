@@ -20,7 +20,7 @@ Je recherche un allergologue pour lui faire des tests et trouver une solution po
 """
 
 # labels = ["Âge", "Patient", "Maladie", "Symptômes"]
-labels = ["Âge", "Patient", "Maladie", "Symptômes", "Habitude de vie", "Antécédent médical"]
+labels = ["Âge", "Patient", "Maladie", "Symptômes", "Traitement", "Habitude de vie", "Antécédent médical"]
 
 entities = model.predict_entities(text, labels, threshold=0.1, flat_ner=True)
 
