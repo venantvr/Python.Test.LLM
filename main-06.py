@@ -41,6 +41,7 @@ def generate_structured_json(text: str) -> dict:
     except json.JSONDecodeError:
         print("Erreur lors de la conversion en JSON. Format non conforme.")
         structured_data = {"error": "Format JSON incorrect"}
+        print(json_response)
 
     return structured_data
 
