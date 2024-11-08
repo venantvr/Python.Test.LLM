@@ -8,7 +8,8 @@ pneumopathie infectieuse. Cette patiente présentait depuis 2 ans des infections
 L’examen physique a trouvé une fièvre à 38ºc et un foyer de râles crépitants de la base pulmonaire droite.
 """
 
-labels = ["Âge", "Patient", "Maladie", "Symptômes"]
+# labels = ["Âge", "Patient", "Maladie", "Symptômes"]
+labels = ["Âge", "Patient", "Maladie", "Symptômes", "Habitude de vie", "Antécédent médical"]
 
 entities = model.predict_entities(text, labels, threshold=0.5, flat_ner=True)
 
