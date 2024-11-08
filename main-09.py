@@ -1,24 +1,25 @@
 import json
+import re
 
-from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
+from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
 
-# Charger BioBERT en local pour une tâche NER biomédicale
-model_name = "dmis-lab/biobert-base-cased-v1.1"  # Modèle biomédical pré-entraîné
+# Charger un modèle NER multilingue (ou spécifique français)
+model_name = "Davlan/xlm-roberta-large-ner-hrl"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForTokenClassification.from_pretrained(model_name)
 
-# Créer une pipeline NER avec `grouped_entities=True`
+# Pipeline NER
 nlp = pipeline("ner", model=model, tokenizer=tokenizer, grouped_entities=True)
 
-# Texte médical en français à analyser
+# Texte médical en français
 text = """
 Mme A.P., âgée de 52 ans, non fumeuse, ayant un diabète de type 2, a été hospitalisée pour une pneumopathie infectieuse.
 """
 
-# Utiliser la pipeline NER
+# Utiliser le modèle NER
 entities = nlp(text)
 
-# Définir un schéma JSON personnalisé pour les entités médicales
+# Schéma JSON
 structured_output = {
     "Patient": [],
     "Âge": [],
@@ -27,24 +28,28 @@ structured_output = {
     "Symptômes": []
 }
 
-# Définir un mapping des labels vers les catégories du schéma
+# Extraction de l'âge avec une expression régulière
+age_match = re.search(r"âgé[e]* de (\d+) ans", text)
+if age_match:
+    structured_output["Âge"].append(age_match.group(1))
+
+# Extraction d'antécédents médicaux potentiels (exemple simplifié)
+medical_history_matches = re.findall(r"diabète|tabagique|hypertension|asthme", text, re.IGNORECASE)
+structured_output["Antécédents médicaux"].extend(medical_history_matches)
+
+# Traitement des entités NER pour ajouter dans le JSON
 label_map = {
     "PER": "Patient",
-    "AGE": "Âge",
     "DISEASE": "Maladies actuelles",
-    "SYMPTOM": "Symptômes",
-    "MEDICAL_HISTORY": "Antécédents médicaux"
+    "SYMPTOM": "Symptômes"
 }
 
-# Traiter chaque entité en fonction de son label
 for entity in entities:
     label = entity["entity_group"]
     text_value = entity["word"]
-
-    # Utiliser le mapping pour structurer en JSON selon les entités
     json_key = label_map.get(label, None)
     if json_key:
         structured_output[json_key].append(text_value)
 
-# Afficher la sortie JSON structurée
+# Résultat structuré en JSON
 print(json.dumps(structured_output, indent=2, ensure_ascii=False))
