@@ -96,6 +96,9 @@ try:
         max_new_tokens=200,
         pad_token_id=tokenizer.pad_token_id
     )
-    print(generated_data)
+    # Décodez les identifiants de tokens en texte
+    decoded_output = tokenizer.decode(generated_data[0], skip_special_tokens=True)
+    print(decoded_output)
+
 except RuntimeError as e:
     print(f"Erreur lors de la génération : {e}")
