@@ -16,7 +16,7 @@ SH"""
 # labels = ["Âge", "Patient", "Maladie", "Symptômes"]
 labels = ["Âge", "Patient", "Maladie", "Symptômes", "Habitude de vie", "Antécédent médical"]
 
-entities = model.predict_entities(text, labels, threshold=0.5, flat_ner=True)
+entities = model.predict_entities(text, labels, threshold=0.1, flat_ner=True)
 
 for entity in entities:
     print(entity["text"], "=>", entity["label"])
