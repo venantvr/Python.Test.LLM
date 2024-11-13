@@ -8,12 +8,18 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # Définir le schéma JSON pour structurer la sortie avec une liste
 schema = {
-    "products": [
-        {
-            "product_name": "string",
-            "price": "float"
+    "properties": {
+        "products": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "product_name": {"type": "string"},
+                    "price": {"type": "number"}
+                }
+            }
         }
-    ]
+    }
 }
 
 # Texte d'entrée
