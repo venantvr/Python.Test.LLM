@@ -6,6 +6,10 @@ model_name = "facebook/opt-350m"  # Modèle léger
 model = AutoModelForCausalLM.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
+# Ajouter un token spécial et redimensionner les embeddings du modèle
+tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+model.resize_token_embeddings(len(tokenizer))
+
 # Définir le schéma JSON pour structurer la sortie avec une liste
 schema = {
     "properties": {
