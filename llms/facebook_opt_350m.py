@@ -23,7 +23,7 @@ input_text = "Voici une liste de produits : un smartphone à 699.99 euros, un or
 jsonformer = Jsonformer(
     model=model,
     tokenizer=tokenizer,
-    schema=schema,
+    json_schema=schema,
     prompt=input_text  # Ajoute le texte d'entrée comme prompt
 )
 
