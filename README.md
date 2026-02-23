@@ -11,3 +11,7 @@ Scripts Python pour tester différentes approches LLM.
 ```bash
 pip install -r requirements.txt
 ```
+
+## Stack
+
+[![Stack](https://skillicons.dev/icons?i=py&theme=dark)](https://skillicons.dev)
